@@ -59,11 +59,9 @@ gitops-repo/
 │   ├── files                      # Directory containing Helm values files
 │   │   ├── elastic-values.yaml    # Elasticsearch values
 │   │   ├── fluent-values.yaml     # Fluentd values
-│   │   ├── kibana-values.yaml     # Kibana values
 │   │   └── prom-values.yaml       # Prometheus values
 │   ├── fluentd.yaml               # Fluentd configuration
 │   ├── ingress-controller.yaml    # Ingress Controller configuration
-│   ├── kibana.yaml                # Kibana configuration
 │   └── kube-prometheus-stack.yaml # Kube Prometheus Stack configuration
 ├── infra-apps.yaml                # Aggregated infrastructure applications manifest
 ├── main-app                       # Main application directory
