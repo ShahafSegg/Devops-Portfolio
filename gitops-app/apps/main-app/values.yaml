@@ -1,0 +1,76 @@
+# Application name
+appName: main-app
+namespace: app
+# Number of replicas for the deployment
+replicas: 1
+
+# ConfigMap
+configmap:
+  name: app-cm
+
+# Service
+service:
+  type: ClusterIP
+  port: 80
+  protocol: TCP
+  targetPort: 5000
+
+# Deployment
+deployment:
+  container:
+    image:
+      repository: 644435390668.dkr.ecr.ap-south-1.amazonaws.com/shahaf-flask-app
+    imagePullPolicy: IfNotPresent
+    port: 5000
+
+  probe:
+    path: /api/hello
+
+  mongodb:
+    password: mongodb-passwords
+
+# MongoDB
+mongodb:
+  architecture: replicaset
+  replicaCount: 2
+  persistence:
+    enabled: true
+
+    size: "8Gi"
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+  arbiter:
+    enabled: false
+  auth:
+    enabled: true
+    usernames: ["people"]
+    databases: ["people_db"]
+    existingSecret: mongo-auth
+
+  resources:
+    requests:
+      cpu: "0.1"
+      memory: "128Mi"
+
+    limits:
+      cpu: "0.2"
+      memory: "256Mi"
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+# Ingress
+ingress:
+  name: ingress-nginx
+  host: shahaf-pf.zapto.org
+  tlsSecret: app-tls-secret
+
+# Issuer
+clusterIssuer:
+  name: letsencrypt-prod
+  mail: shahafseg@gmail.com
+  secretKeyRef: letsencrypt-prod

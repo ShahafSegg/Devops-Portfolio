@@ -1,0 +1,16 @@
+apiVersion: v2
+name: app
+description: A Helm chart for flask application
+
+type: application
+
+# Chart version
+version: 1.0.6
+
+# Deployment app version
+appVersion: 1.0.25
+
+dependencies:
+  - name: mongodb
+    version: 15.3.0
+    repository: https://charts.bitnami.com/bitnami

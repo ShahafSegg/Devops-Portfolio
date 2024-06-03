@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Dict</title>
+</head>
+<body>
+    <h1>Welcome To People Dictionary</h1>
+
+    <h2>Create Person</h2>
+    <form id="form-create">
+        <label for="personId">Person ID:</label><br>
+        <input type="number" id="personId" name="personId" required><br>
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="age">Age:</label><br>
+        <input type="number" id="age" name="age" required><br><br>
+        <button type="button" id="btn-create">Create Person</button>
+    </form>
+
+    <h2>Delete Person</h2>
+    <form id="form-delete">
+        <label for="deleteId">Person ID:</label><br>
+        <input type="number" id="deleteId" name="deleteId" required><br><br>
+        <button type="submit" id="btn-delete">Delete Person</button>
+    </form>
+
+    <h2>Get Person</h2>
+    <form id="form-get">
+        <label for="getId">Person ID:</label><br>
+        <input type="number" id="getId" name="getId" required><br><br>
+        <button type="button" id="btn-get">Get Person</button>
+        <div id="person-details"></div>
+    </form>
+
+    <h2>Get All People</h2>
+    <button type="button" id="btn-get-all">Get All People</button>
+    <div id="all-people"></div>
+
+    <script>
+        // Function to make AJAX requests
+        function makeRequest(method, url, data = null, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(method, url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(JSON.parse(xhr.responseText));
+                }
+            };
+            xhr.send(data ? JSON.stringify(data) : null);
+        }
+
+        // Event listener for Create form submission
+        document.getElementById('btn-create').addEventListener('click', function(event) {
+            event.preventDefault();
+            var personId = document.getElementById('personId').value;
+            var name = document.getElementById('name').value;
+            var age = document.getElementById('age').value;
+            var data = { "name": name, "age": age };
+            makeRequest('POST', '/person/' + personId, data, function(response) {
+                alert(response.message);
+            });
+        });
+
+        // Event listener for Delete form submission
+        document.getElementById('form-delete').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var deleteId = document.getElementById('deleteId').value;
+            makeRequest('DELETE', '/person/' + deleteId, null, function(response) {
+                alert(response.message);
+            });
+        });
+
+        // Event listener for Get Person button
+        document.getElementById('btn-get').addEventListener('click', function() {
+            var getId = document.getElementById('getId').value;
+            makeRequest('GET', '/person/' + getId, null, function(response) {
+                document.getElementById('person-details').innerHTML = JSON.stringify(response);
+            });
+        });
+
+        // Event listener for Get All People button
+        document.getElementById('btn-get-all').addEventListener('click', function() {
+            makeRequest('GET', '/person', null, function(response) {
+                document.getElementById('all-people').innerHTML = JSON.stringify(response);
+            });
+        });
+    </script>
+</body>
+</html>

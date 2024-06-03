@@ -1,0 +1,147 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_COMMIT_MSG = sh(returnStdout: true, script: "git log -1 --pretty=%B").trim()
+        DOCKER_IMAGE = 'flask-app:test'
+        NGINX_IMAGE = 'nginx:test'
+        CONTAINER_NAME = 'app'
+        APP_PORT = '5000'
+        AWS_URI = '644435390668.dkr.ecr.ap-south-1.amazonaws.com'
+        ECR_URI = '/shahaf-flask-app'
+    }
+
+    stages {
+        stage('Versioning') {
+            when { branch 'main'}
+            steps {
+                script {
+                    def latestVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 --match '*.*.*' 2> /dev/null || echo 'none'").trim()
+                    if (latestVersion == 'none') {
+                        env.TAG = "1.0.0"
+                    } else {
+                        def (major, minor, patch) = latestVersion.tokenize('.').collect { it.toInteger() }
+                        env.TAG = "${major}.${minor}.${patch + 1}"
+                    }                
+                }
+            }
+        }
+
+
+        stage('Build') {
+            steps {
+                script {
+                    docker.build("${env.DOCKER_IMAGE}")
+                    sh """
+                        docker build -t ${env.DOCKER_IMAGE} -f Dockerfile .
+                        docker build -t ${env.NGINX_IMAGE} -f Dockerfile-nginx .
+                    """
+                }
+            }
+        }
+        stage('Unit test') {
+            steps {
+                script {
+                    sh """
+                        docker compose up -d
+                        chmod +x ./tests/unit-test.sh
+                        ./tests/unit-test.sh
+                    """
+                }
+            }
+        }
+
+        stage('E2E Test') {
+            steps {
+                script {
+                    sh """
+                        chmod +x ./tests/e2e.sh
+                        ./tests/e2e.sh
+                        docker compose down -v
+                    """
+                }
+            }
+        }
+
+        stage('Publish') {
+            when { branch 'main' }
+            steps {
+                script {
+                    sh """
+                        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${env.AWS_URI}
+                        docker tag ${env.DOCKER_IMAGE} ${env.AWS_URI}${ECR_URI}:${env.TAG}
+                        docker push ${env.AWS_URI}${ECR_URI}:${env.TAG}
+                    """
+
+                    // Add tag to app repo
+                    withCredentials([gitUsernamePassword(credentialsId: 'gitlab-token')]) {
+                        sh """
+                            git tag ${env.TAG}
+                            git push origin ${env.TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Update GitOps') {
+            when { branch 'main' }
+            steps {
+                script {
+                    withCredentials([gitUsernamePassword(credentialsId: 'gitlab-token')]) {
+                        // Clone GitOps repository
+                        sh """
+                            git clone https://gitlab.com/shahaf4/gitops-app.git
+                        """
+
+                        // Change directory to the cloned repository
+                        dir('gitops-app') {
+                            // Replace version and appVersion in Chart.yaml
+                            sh """
+                                sed -i 's/appVersion: .*/appVersion: ${env.TAG}/' ./apps/main-app/Chart.yaml
+                            """
+
+                            // Configure Git user identity
+                            sh """
+                                git config user.email "jenkins@example.com"
+                                git config user.name "Jenkins"
+                            """
+
+                            // Commit and push changes
+                            sh """
+                                git add ./apps/main-app/Chart.yaml
+                                git commit -m "Update version and appVersion to ${env.TAG}"
+                                git push origin main
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    post{
+        always{
+            sh "docker compose down -v"
+            cleanWs()
+        }
+        failure {
+            emailext(
+                recipientProviders: [culprits()],
+                subject: 'Build failure',
+                body: 'Build failure.',
+                attachLog: true,
+                compressLog: true
+            )
+        }
+        success {
+            emailext(
+                recipientProviders: [culprits()],
+                subject: 'Build success',
+                body: 'Build success.',
+                attachLog: true,
+                compressLog: true
+            )
+        }
+    }
+}

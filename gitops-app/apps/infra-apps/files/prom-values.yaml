@@ -1,0 +1,27 @@
+crds:
+  enabled: true
+
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+      - job_name: main-app
+        honor_labels: true
+        scrape_interval: 1m
+        scrape_timeout: 30s
+        metrics_path: /metrics
+        scheme: http
+        static_configs:
+          - targets:
+              - shahaf-pf.zapto.org
+
+grafana:
+  enabled: true
+  persistence:
+    enabled: true
+    type: sts
+    storageClassName: "gp2"
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+    finalizers:
+      - kubernetes.io/pvc-protection

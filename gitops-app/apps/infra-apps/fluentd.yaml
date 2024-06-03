@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fluent
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: "https://fluent.github.io/helm-charts"
+      chart: fluent-bit
+      targetRevision: 0.46.7
+      helm:
+        valueFiles:
+          - $values/apps/infra-apps/files/fluent-values.yaml
+    - repoURL: "git@gitlab.com:shahaf4/gitops-app.git"
+      targetRevision: HEAD
+      ref: values
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: efk
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true

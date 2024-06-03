@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: elasticsearch
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: "https://charts.bitnami.com/bitnami"
+      chart: elasticsearch
+      targetRevision: 21.1.0
+      helm:
+        valueFiles:
+          - $values/apps/infra-apps/files/elastic-values.yaml
+    - repoURL: "git@gitlab.com:shahaf4/gitops-app.git"
+      targetRevision: HEAD
+      ref: values
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: efk
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true

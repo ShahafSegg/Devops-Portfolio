@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.appName }}
+  name: {{ .Values.appName }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+        - image: "{{ .Values.deployment.container.image.repository }}:{{ .Values.deployment.container.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.deployment.container.imagePullPolicy }}
+          env:
+            - name: MONGO_USER
+              value: {{ index .Values.mongodb.auth.usernames 0}}
+            - name: MONGO_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongodb.auth.existingSecret }}
+                  key: {{ .Values.deployment.mongodb.password }}
+            - name: MONGO_DB
+              value: {{ index .Values.mongodb.auth.databases 0}}
+            - name: MONGO_URI
+              value: "mongodb://$(MONGO_USER):$(MONGO_PASS)@main-app-mongodb-0.main-app-mongodb-headless.app.svc.cluster.local,main-app-mongodb-1.main-app-mongodb-headless.app.svc.cluster.local:27017/$(MONGO_DB)"
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.configmap.name }}
+          name: {{ .Values.appName }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.deployment.container.port }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.deployment.probe.path }}
+              port: {{ .Values.deployment.container.port }}
+              scheme: HTTP

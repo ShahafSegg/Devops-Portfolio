@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: app
+    depends_on:
+      - mongo
+    networks:
+      - proxy-net
+      - db-net
+
+  mongo:
+    image: mongo:4.4
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - db-net
+
+  nginx:
+    image: nginx:test
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - proxy-net
+
+volumes:
+  mongo-data:
+
+networks:
+  proxy-net:
+  db-net:

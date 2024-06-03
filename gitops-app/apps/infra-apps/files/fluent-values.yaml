@@ -1,0 +1,42 @@
+config:
+  logLevel: trace
+  service: |
+    [SERVICE]
+        Daemon Off
+        Flush {{ .Values.flush }}
+        Log_Level debug
+        Parsers_File /fluent-bit/etc/parsers.conf
+        Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port {{ .Values.metricsPort }}
+        Health_Check On
+        Trace_Error On
+
+  ## https://docs.fluentbit.io/manual/pipeline/inputs
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/*main*.log
+        Tag kube.*
+        Parser docker
+        Mem_Buf_Limit 50MB
+        Skip_Long_Lines On
+
+  ## https://docs.fluentbit.io/manual/pipeline/outputs
+  outputs: |
+    [OUTPUT]
+        Name es
+        Match *main*
+        Index fluent-bit
+        Type  _doc
+        Host elasticsearch.efk.svc.cluster.local
+        Port 9200
+        HTTP_User elastic
+        HTTP_Passwd admin@123
+        tls On
+        tls.verify Off
+        Logstash_Format On
+        Logstash_Prefix logstash
+        Retry_Limit False
+        Suppress_Type_Name On
