@@ -23,7 +23,6 @@ resource "aws_eks_node_group" "node_group" {
     aws_iam_role_policy_attachment.worker_node_policy,
     aws_iam_role_policy_attachment.worker_cni_policy,
     aws_iam_role_policy_attachment.worker_registry_policy,
-    aws_iam_role_policy_attachment.ecr_s3_pull_policy_attachment,
     aws_iam_role_policy_attachment.ebs_csi_policy,
     aws_eks_cluster.eks
   ]
