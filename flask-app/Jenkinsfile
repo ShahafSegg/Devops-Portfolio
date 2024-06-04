@@ -12,22 +12,6 @@ pipeline {
     }
 
     stages {
-        stage('Versioning') {
-            when { branch 'main'}
-            steps {
-                script {
-                    def latestVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 --match '*.*.*' 2> /dev/null || echo 'none'").trim()
-                    if (latestVersion == 'none') {
-                        env.TAG = "1.0.0"
-                    } else {
-                        def (major, minor, patch) = latestVersion.tokenize('.').collect { it.toInteger() }
-                        env.TAG = "${major}.${minor}.${patch + 1}"
-                    }                
-                }
-            }
-        }
-
-
         stage('Build') {
             steps {
                 script {
@@ -62,7 +46,21 @@ pipeline {
                 }
             }
         }
-
+        stage('Versioning') {
+            when { branch 'main'}
+            steps {
+                script {
+                    def latestVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 --match '*.*.*' 2> /dev/null || echo 'none'").trim()
+                    if (latestVersion == 'none') {
+                        env.TAG = "1.0.0"
+                    } else {
+                        def (major, minor, patch) = latestVersion.tokenize('.').collect { it.toInteger() }
+                        env.TAG = "${major}.${minor}.${patch + 1}"
+                    }                
+                }
+            }
+        }
+        
         stage('Publish') {
             when { branch 'main' }
             steps {
