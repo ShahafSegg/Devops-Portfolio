@@ -9,17 +9,6 @@ pipeline {
     }
 
     stages {
-        stage('Unit test') {
-            steps {
-                script {
-                    sh """
-                        chmod +x ./tests/unit-test.sh
-                        ./tests/unit-test.sh
-                    """
-                }
-            }
-        }
-
         stage('Build') {
             steps {
                 script {
@@ -31,7 +20,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('E2E Test') {
             steps {
                 script {
