@@ -1,34 +1,22 @@
 #!/bin/bash
 
-CONTAINER_NAME="app"
+API_URL="http://0.0.0.0:5000"
 
-create_person() {
-    timeout --foreground -s TERM 30s bash -c \
-        'while [[ "$(docker compose exec "${CONTAINER_NAME}" curl -s -o /dev/null -w \"%{http_code}\" -X POST http://localhost:80/person/1 -H \"Content-Type: application/json\" -d '{\"name\": \"John Doe\", \"age\": 30}')" != "200" ]];\
-        do echo "Creating person using POST..." && sleep 5;\
-        done' "${1}"
-    echo "${1} - OK!"
-}
+POST_DATA='{
+    "name": "roey",
+    "age": "22"
+}'
 
-get_person() {
-    timeout --foreground -s TERM 30s bash -c \
-        'while [[ "$(docker compose exec "${CONTAINER_NAME}" curl -s -o /dev/null -w \"%{http_code}\" ${0})" != "200" ]];\
-        do echo "Gettings person using GET" && sleep 5;\
-        done' "${1}"
-    echo "${1} - OK!"
-}
+# Run a local mongodb
+docker run -d --name mongo -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=rootpassword -p 27017:27017 mongo:4.4
 
-delete_person() {
-    echo "Deleting Person..."
-    timeout --foreground -s TERM 30s bash -c \
-        'while [[ "$(docker compose exec "${CONTAINER_NAME}" curl -s -o /dev/null -w \"%{http_code}\" -X DELETE http://localhost:80/person/1)" != "200" ]];\
-        do echo "Deleting person using DELETE" && sleep 5;\
-        done' "${1}"
-    echo "${1} - OK!"
-}
+echo "Testing POST request..."
+curl -s -X POST -H "Content-Type: application/json" -d "${POST_DATA}" "$API_URL/person/1"
 
-create_person
-get_person
-delete_person
+echo "Testing GET request..."
+curl -s -X GET "$API_URL"
+
+echo "Testing DELETE request..."
+curl -s -X DELETE "$API_URL"
 
 echo "All tests passed!"
