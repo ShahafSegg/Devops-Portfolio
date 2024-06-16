@@ -7,8 +7,8 @@ type: application
 # Chart version
 version: 1.0.6
 
-# Deployment app version
-appVersion: 1.0.25
+# Deployment app version 1.0.25
+appVersion: "{{.Values.deployment.image.tag}}"
 
 dependencies:
   - name: mongodb

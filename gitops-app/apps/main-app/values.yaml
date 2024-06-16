@@ -20,6 +20,7 @@ deployment:
   container:
     image:
       repository: 644435390668.dkr.ecr.ap-south-1.amazonaws.com/shahaf-flask-app
+      tag: ""
     imagePullPolicy: IfNotPresent
     port: 5000
 

@@ -1,8 +1,8 @@
 import unittest
 
 class TestPass(unittest.TestCase):
-  def testalwayspass(self):
-    self.assertTrue(True)
+    def test_always_pass(self):
+        self.assertTrue(True)
 
-if name == '__main':
-  unittest.main()
+if __name__ == '__main__':
+    unittest.main()

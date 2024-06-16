@@ -93,7 +93,7 @@ pipeline {
                         dir('gitops-app') {
                             // Replace version and appVersion in Chart.yaml
                             sh """
-                                sed -i 's/appVersion: .*/appVersion: ${env.TAG}/' ./apps/main-app/Chart.yaml
+                                sed -i 's/tag: .*/tag: ${env.TAG}/' ./apps/main-app/values.yaml
                             """
 
                             // Configure Git user identity
