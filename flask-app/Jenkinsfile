@@ -9,6 +9,16 @@ pipeline {
     }
 
     stages {
+        stage('Unit Test') {
+            steps {
+                script {
+                    sh """
+                        echo 'Performing some unit tests...'
+                        python unittest.py
+                    """
+                }
+            }
+        }
         stage('Build') {
             steps {
                 script {
