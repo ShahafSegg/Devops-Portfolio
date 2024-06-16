@@ -104,8 +104,8 @@ pipeline {
 
                             // Commit and push changes
                             sh """
-                                git add ./apps/main-app/Chart.yaml
-                                git commit -m "Update version and appVersion to ${env.TAG}"
+                                git add ./apps/main-app/values.yaml
+                                git commit -m "Updated values.yaml image tag to ${env.TAG}"
                                 git push origin main
                             """
                         }
