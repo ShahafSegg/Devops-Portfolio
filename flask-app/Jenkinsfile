@@ -14,7 +14,7 @@ pipeline {
                 script {
                     sh """
                         echo 'Performing some unit tests...'
-                        python unittest.py
+                        python3 ./tests/unit_testing.py
                     """
                 }
             }
