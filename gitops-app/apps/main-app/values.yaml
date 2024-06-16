@@ -67,7 +67,7 @@ mongodb:
 # Ingress
 ingress:
   name: ingress-nginx
-  host: shahaf-pf.zapto.org
+  host: shahaf-port.zapto.org
   tlsSecret: app-tls-secret
 
 # Issuer
