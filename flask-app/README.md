@@ -60,8 +60,9 @@ flask-app/
 │ └── nginx.conf
 ├── static/                 # Directory containing the static files
 │ └── index.html
-├── tests/                  # Directory containing the end-to-end tests script
-│ └── test.sh
+├── tests/                  # Directory containing the tests scripts
+│ ├── e2e.sh
+│ └── unit_testing.py
 └── README.md               # This README file
 ```
 
