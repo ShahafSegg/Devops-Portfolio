@@ -3,7 +3,7 @@ resource "aws_eks_node_group" "node_group" {
   cluster_name    = var.cluster_name
   node_group_name = "${var.cluster_name}_node_group"
   node_role_arn   = aws_iam_role.worker_nodes.arn
-  subnet_ids      = var.subnets_ids
+  subnet_ids      = var.private_subnets_ids
 
   scaling_config {
     desired_size = var.node_count
@@ -27,6 +27,19 @@ resource "aws_eks_node_group" "node_group" {
     aws_eks_cluster.eks
   ]
 
+}
+
+# Null resource to run script for modifying instance metadata options
+resource "null_resource" "modify_instance_metadata" {
+  provisioner "local-exec" {
+    command = <<EOT
+      ./fix-pv.sh
+    EOT
+  }
+
+  depends_on = [
+    aws_eks_node_group.node_group
+  ]
 }
 
 # EKS Node Security Group

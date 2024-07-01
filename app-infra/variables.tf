@@ -18,3 +18,6 @@ variable "account_id" {}
 
 variable "env" {}
 
+variable "cidr_blocks_public_subnets" {}
+
+variable "cidr_blocks_private_subnets" {}

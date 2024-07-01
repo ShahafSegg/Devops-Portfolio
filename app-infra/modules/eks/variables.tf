@@ -4,7 +4,7 @@ variable "node_count" {}
 
 variable "cluster_name" {}
 
-variable "subnets_ids" {}
+variable "private_subnets_ids" {}
 
 variable "tags" {}
 
